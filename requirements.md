@@ -81,3 +81,17 @@
     returns `200` and the updated task JSON.
   - `curl -i -X PUT http://localhost:3000/tasks/999 -H "Content-Type: application/json" -d '{"title":"X"}'`
     returns `404` with the error JSON.
+
+### Day 7 – Next Goal
+
+- **Objective**: Implement `DELETE /tasks/:id` to delete a task from memory.
+- **Endpoint**: `DELETE /tasks/:id`
+- **Behavior**:
+  - Finds the task by `id` in the `tasks` slice.
+  - Removes the task from the slice.
+  - Returns HTTP `200 OK` with a confirmation message, e.g. `{"message": "task deleted"}`.
+  - Returns HTTP `404 Not Found` with `{"error": "task not found"}` when `id` does not exist.
+- **Done when**:
+  - `curl -i -X DELETE http://localhost:3000/tasks/1` returns `200` with the confirmation JSON.
+  - `curl http://localhost:3000/tasks` no longer includes the deleted task.
+  - `curl -i -X DELETE http://localhost:3000/tasks/999` returns `404` with the error JSON.

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -105,6 +106,19 @@ func main() {
 		tasks[index].CreatedAt = originalCreatedAt
 
 		return c.Status(fiber.StatusOK).JSON(tasks[index])
+	})
+
+	app.Delete("/tasks/:id", func(c fiber.Ctx) error {
+		id := c.Params("id")
+
+		index, err := getTaskIndexById(id)
+		if err != nil {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Task not found"})
+		}
+
+		tasks = slices.Delete(tasks, index, index+1)
+
+		return c.JSON(fiber.Map{"message": "Task deleted successfully"})
 	})
 
 	err := app.Listen(":3000")
