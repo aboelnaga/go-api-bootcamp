@@ -44,6 +44,15 @@ func main() {
 		return Task{}, fmt.Errorf("task not found")
 	}
 
+	getTaskIndexById := func(id string) (int, error) {
+		for i, task := range tasks {
+			if task.ID == id {
+				return i, nil
+			}
+		}
+		return -1, fmt.Errorf("task not found")
+	}
+
 	app.Get("/health", func(c fiber.Ctx) error {
 		return c.JSON(map[string]string{"status": "ok"})
 	})
@@ -72,7 +81,30 @@ func main() {
 		task.ID = fmt.Sprintf("%d", len(tasks)+1)
 		task.CreatedAt = time.Now()
 		tasks = append(tasks, *task)
-		return c.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "User created successfully", "task": task})
+		return c.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "Task created successfully", "task": task})
+	})
+
+	app.Put("/tasks/:id", func(c fiber.Ctx) error {
+		id := c.Params("id")
+
+		index, err := getTaskIndexById(id)
+		if err != nil {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Task not found"})
+		}
+
+		originalID := tasks[index].ID
+		originalCreatedAt := tasks[index].CreatedAt
+
+		if err := c.Bind().Body(&tasks[index]); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "cannot parse JSON",
+			})
+		}
+
+		tasks[index].ID = originalID
+		tasks[index].CreatedAt = originalCreatedAt
+
+		return c.Status(fiber.StatusOK).JSON(tasks[index])
 	})
 
 	err := app.Listen(":3000")

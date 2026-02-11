@@ -51,7 +51,7 @@
   - `curl http://localhost:3000/tasks/1` returns the JSON for task with `id = "1"`.
   - `curl http://localhost:3000/tasks/999` returns `404` with the JSON error.
 
-### Day 5 – Next Goal
+### Day 5 – Goal
 
 - **Objective**: Implement `POST /tasks` to create a new task in memory.
 - **Endpoint**: `POST /tasks`
@@ -65,3 +65,19 @@
 - **Done when**:
   - `curl -i -X POST http://localhost:3000/tasks -H "Content-Type: application/json" -d '{"title":"New Task","description":"Test"}'`
     returns `201` and the created task JSON.
+
+### Day 6 – Next Goal
+
+- **Objective**: Implement `PUT /tasks/:id` to update an existing task in memory.
+- **Endpoint**: `PUT /tasks/:id`
+- **Behavior**:
+  - Accepts JSON body with updatable fields (e.g. `title`, `description`, `completed`).
+  - Finds the task by `id` in the `tasks` slice.
+  - Updates the task’s fields while keeping `id` and `createdAt` unchanged.
+  - Returns HTTP `200 OK` with the updated task as JSON when `id` exists.
+  - Returns HTTP `404 Not Found` with `{"error": "task not found"}` when `id` does not exist.
+- **Done when**:
+  - `curl -i -X PUT http://localhost:3000/tasks/1 -H "Content-Type: application/json" -d '{"title":"Updated title","completed":true}'`
+    returns `200` and the updated task JSON.
+  - `curl -i -X PUT http://localhost:3000/tasks/999 -H "Content-Type: application/json" -d '{"title":"X"}'`
+    returns `404` with the error JSON.
