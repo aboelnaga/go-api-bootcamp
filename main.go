@@ -4,15 +4,25 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v3"
 )
 
 type Task struct {
 	ID          string    `json:"id"`
-	Title       string    `json:"title"`
+	Title       string    `json:"title" validate:"required"`
 	Description string    `json:"description"`
 	Completed   bool      `json:"completed"`
-	CreatedAt   time.Time `json:"createdAt"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
+type structValidator struct {
+	validate *validator.Validate
+}
+
+// Validator needs to implement the Validate method
+func (v *structValidator) Validate(out any) error {
+	return v.validate.Struct(out)
 }
 
 var tasks = []Task{
@@ -21,7 +31,9 @@ var tasks = []Task{
 }
 
 func main() {
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		StructValidator: &structValidator{validate: validator.New()},
+	})
 
 	getTaskById := func(id string) (Task, error) {
 		for _, task := range tasks {
@@ -48,6 +60,19 @@ func main() {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Task not found"})
 		}
 		return c.JSON(task)
+	})
+
+	app.Post("/tasks", func(c fiber.Ctx) error {
+		task := new(Task)
+
+		if err := c.Bind().Body(task); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+		}
+
+		task.ID = fmt.Sprintf("%d", len(tasks)+1)
+		task.CreatedAt = time.Now()
+		tasks = append(tasks, *task)
+		return c.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "User created successfully", "task": task})
 	})
 
 	err := app.Listen(":3000")
