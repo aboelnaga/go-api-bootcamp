@@ -40,3 +40,28 @@
   - `go run .` starts the server without errors.
   - `curl http://localhost:3000/tasks` returns the JSON array of tasks.
 
+### Day 4 – Next Goal
+
+- **Objective**: Implement `GET /tasks/:id` to fetch a single task by its `id` from the same in-memory slice.
+- **Endpoint**: `GET /tasks/:id`
+- **Behavior**:
+  - Returns HTTP `200 OK` with the matching task as JSON when `id` exists.
+  - Returns HTTP `404 Not Found` with a simple JSON error, e.g. `{"error": "task not found"}`, when `id` does not exist.
+- **Done when**:
+  - `curl http://localhost:3000/tasks/1` returns the JSON for task with `id = "1"`.
+  - `curl http://localhost:3000/tasks/999` returns `404` with the JSON error.
+
+### Day 5 – Next Goal
+
+- **Objective**: Implement `POST /tasks` to create a new task in memory.
+- **Endpoint**: `POST /tasks`
+- **Behavior**:
+  - Accepts JSON body with at least `title` (string) and optional `description`.
+  - Appends a new `Task` to the in-memory `tasks` slice with:
+    - A new `id` (e.g. incrementing string `"3"`, `"4"`, ...).
+    - `completed` defaulting to `false`.
+    - `createdAt` set to the current time.
+  - Returns HTTP `201 Created` with the created task as JSON.
+- **Done when**:
+  - `curl -i -X POST http://localhost:3000/tasks -H "Content-Type: application/json" -d '{"title":"New Task","description":"Test"}'`
+    returns `201` and the created task JSON.
