@@ -95,3 +95,17 @@
   - `curl -i -X DELETE http://localhost:3000/tasks/1` returns `200` with the confirmation JSON.
   - `curl http://localhost:3000/tasks` no longer includes the deleted task.
   - `curl -i -X DELETE http://localhost:3000/tasks/999` returns `404` with the error JSON.
+
+### Day 8 – Next Goal
+
+- **Objective**: Add query parameter filtering to `GET /tasks` so clients can filter by `completed` status.
+- **Endpoint**: `GET /tasks?completed=true` or `GET /tasks?completed=false`
+- **Behavior**:
+  - If no query parameter is provided, return all tasks (existing behavior).
+  - If `?completed=true` is provided, return only tasks where `completed` is `true`.
+  - If `?completed=false` is provided, return only tasks where `completed` is `false`.
+  - Returns HTTP `200 OK` with a JSON array of matching tasks (may be empty `[]`).
+- **Done when**:
+  - `curl http://localhost:3000/tasks` returns all tasks.
+  - `curl http://localhost:3000/tasks?completed=true` returns only completed tasks.
+  - `curl http://localhost:3000/tasks?completed=false` returns only incomplete tasks.

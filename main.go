@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"slices"
+	"strconv"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -54,11 +55,40 @@ func main() {
 		return -1, fmt.Errorf("task not found")
 	}
 
+	queryTasksByCompleted := func(isCompleted string) ([]Task, error) {
+		queryResult := []Task{}
+		queryValue, err := strconv.ParseBool(isCompleted)
+
+		if err != nil {
+			return nil, fmt.Errorf("not valid query")
+		}
+
+		for _, task := range tasks {
+			if task.Completed == queryValue {
+				queryResult = append(queryResult, task)
+			}
+		}
+
+		return queryResult, nil
+	}
+
 	app.Get("/health", func(c fiber.Ctx) error {
 		return c.JSON(map[string]string{"status": "ok"})
 	})
 
 	app.Get("/tasks", func(c fiber.Ctx) error {
+		completed := c.Query("completed")
+
+		if completed != "" {
+			queryResult, err := queryTasksByCompleted(completed)
+
+			if err != nil {
+				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+			}
+
+			return c.JSON(queryResult)
+		}
+
 		return c.JSON(tasks)
 	})
 
