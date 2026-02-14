@@ -1,155 +1,16 @@
 package main
 
 import (
-	"fmt"
-	"slices"
-	"strconv"
-	"time"
-
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v3"
 )
-
-type Task struct {
-	ID          string    `json:"id"`
-	Title       string    `json:"title" validate:"required"`
-	Description string    `json:"description"`
-	Completed   bool      `json:"completed"`
-	CreatedAt   time.Time `json:"created_at"`
-}
-
-type structValidator struct {
-	validate *validator.Validate
-}
-
-// Validator needs to implement the Validate method
-func (v *structValidator) Validate(out any) error {
-	return v.validate.Struct(out)
-}
-
-var tasks = []Task{
-	{ID: "1", Title: "Learn Go", Description: "Learn Go", Completed: false, CreatedAt: time.Now()},
-	{ID: "2", Title: "Build Task API", Description: "Build Task API", Completed: true, CreatedAt: time.Now()},
-}
 
 func main() {
 	app := fiber.New(fiber.Config{
 		StructValidator: &structValidator{validate: validator.New()},
 	})
 
-	getTaskById := func(id string) (Task, error) {
-		for _, task := range tasks {
-			if task.ID == id {
-				return task, nil
-			}
-		}
-		return Task{}, fmt.Errorf("task not found")
-	}
-
-	getTaskIndexById := func(id string) (int, error) {
-		for i, task := range tasks {
-			if task.ID == id {
-				return i, nil
-			}
-		}
-		return -1, fmt.Errorf("task not found")
-	}
-
-	queryTasksByCompleted := func(isCompleted string) ([]Task, error) {
-		queryResult := []Task{}
-		queryValue, err := strconv.ParseBool(isCompleted)
-
-		if err != nil {
-			return nil, fmt.Errorf("not valid query")
-		}
-
-		for _, task := range tasks {
-			if task.Completed == queryValue {
-				queryResult = append(queryResult, task)
-			}
-		}
-
-		return queryResult, nil
-	}
-
-	app.Get("/health", func(c fiber.Ctx) error {
-		return c.JSON(map[string]string{"status": "ok"})
-	})
-
-	app.Get("/tasks", func(c fiber.Ctx) error {
-		completed := c.Query("completed")
-
-		if completed != "" {
-			queryResult, err := queryTasksByCompleted(completed)
-
-			if err != nil {
-				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
-			}
-
-			return c.JSON(queryResult)
-		}
-
-		return c.JSON(tasks)
-	})
-
-	app.Get("/tasks/:id", func(c fiber.Ctx) error {
-		id := c.Params("id")
-
-		task, err := getTaskById(id)
-		if err != nil {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Task not found"})
-		}
-		return c.JSON(task)
-	})
-
-	app.Post("/tasks", func(c fiber.Ctx) error {
-		task := new(Task)
-
-		if err := c.Bind().Body(task); err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
-		}
-
-		task.ID = fmt.Sprintf("%d", len(tasks)+1)
-		task.CreatedAt = time.Now()
-		tasks = append(tasks, *task)
-		return c.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "Task created successfully", "task": task})
-	})
-
-	app.Put("/tasks/:id", func(c fiber.Ctx) error {
-		id := c.Params("id")
-
-		index, err := getTaskIndexById(id)
-		if err != nil {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Task not found"})
-		}
-
-		originalID := tasks[index].ID
-		originalCreatedAt := tasks[index].CreatedAt
-
-		if err := c.Bind().Body(&tasks[index]); err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "cannot parse JSON",
-			})
-		}
-
-		tasks[index].ID = originalID
-		tasks[index].CreatedAt = originalCreatedAt
-
-		return c.Status(fiber.StatusOK).JSON(tasks[index])
-	})
-
-	app.Delete("/tasks/:id", func(c fiber.Ctx) error {
-		id := c.Params("id")
-
-		index, err := getTaskIndexById(id)
-		if err != nil {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Task not found"})
-		}
-
-		tasks = slices.Delete(tasks, index, index+1)
-
-		return c.JSON(fiber.Map{"message": "Task deleted successfully"})
-	})
+	setupRoutes(app)
 
 	err := app.Listen(":3000")
 	if err != nil {
