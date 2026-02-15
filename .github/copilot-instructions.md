@@ -49,3 +49,9 @@ Questions for the maintainer (for clarifying agent actions)
 - Preferred ID format: keep string numeric IDs, or migrate to UUIDs (`github.com/google/uuid`)?
 
 If anything here is unclear or you'd like a different level of detail, tell me which section to expand or revise.
+
+Learning workflow & requirements-driven development
+- Purpose: this project is primarily a learning playground for Go and backend basics. Use `requirements.md` as your daily task list and source of truth for small, incremental learning goals.
+- Daily flow: pick a Day/target from `requirements.md`, implement changes in the codebase, ask the AI questions during implementation (design, code, tests), then commit changes and update the corresponding item in `requirements.md` to mark it done.
+- When a day's requirements are complete: update `requirements.md`, commit the change, and optionally ask the AI to propose the next Day/task to add.
+- Notes for AI agents: prefer small, incremental edits tied to a specific Day from `requirements.md`. When adding features, include a short test or manual verification steps and update `requirements.md` with results.
