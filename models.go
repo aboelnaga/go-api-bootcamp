@@ -4,10 +4,13 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	"gorm.io/gorm"
 )
 
+var db *gorm.DB
+
 type Task struct {
-	ID          string    `json:"id"`
+	ID          uint      `json:"id" gorm:"primaryKey"`
 	Title       string    `json:"title" validate:"required"`
 	Description string    `json:"description"`
 	Completed   bool      `json:"completed"`
@@ -23,7 +26,13 @@ func (v *structValidator) Validate(out any) error {
 	return v.validate.Struct(out)
 }
 
-var tasks = []Task{
-	{ID: "1", Title: "Learn Go", Description: "Learn Go", Completed: false, CreatedAt: time.Now()},
-	{ID: "2", Title: "Build Task API", Description: "Build Task API", Completed: true, CreatedAt: time.Now()},
+func seedDB(db *gorm.DB) {
+	var count int64
+
+	db.Model(&Task{}).Count(&count)
+
+	if count == 0 {
+		db.Create(&Task{Title: "Learn Go", Description: "Learn Go"})
+		db.Create(&Task{Title: "Build task AAPI", Description: "Build. task API", Completed: true})
+	}
 }
