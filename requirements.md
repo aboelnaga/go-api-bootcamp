@@ -110,7 +110,7 @@
   - `curl http://localhost:3000/tasks?completed=true` returns only completed tasks.
   - `curl http://localhost:3000/tasks?completed=false` returns only incomplete tasks.
 
-### Day 9 – [ ] Refactor project structure
+### Day 9 – [x] Refactor project structure
 
 - **Objective**: Refactor the project by splitting `main.go` into separate files with clear responsibilities.
 - **Target structure**:
@@ -130,7 +130,7 @@
   - All existing curl commands still work identically.
   - `main.go` is short and only contains app config and `app.Listen`.
 
-### Day 10 – [ ] SQLite with GORM
+### Day 10 – [x] SQLite with GORM
 
 - **Objective**: Replace the in-memory slice with a SQLite database using GORM.
 - **What you'll learn**: Go ORM basics, database migrations, and persistent storage.
