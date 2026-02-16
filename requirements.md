@@ -143,7 +143,7 @@
   - All existing curl commands work identically.
   - Data persists across server restarts.
 
-### Day 11 – [ ] Unit tests
+### Day 11 – [x] Unit tests
 
 - **Objective**: Write unit tests for your API endpoints using Go's `testing` package and `net/http/httptest`.
 - **What you'll learn**: Go testing conventions, table-driven tests, and HTTP testing.
