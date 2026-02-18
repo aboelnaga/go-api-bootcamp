@@ -11,8 +11,10 @@ import (
 )
 
 func main() {
+	cfg := LoadConfig()
+
 	var err error
-	db, err = gorm.Open(sqlite.Open("tasks.db"), &gorm.Config{})
+	db, err = gorm.Open(sqlite.Open(cfg.DBPath), &gorm.Config{})
 
 	if err != nil {
 		panic("couldn't connect to DB")
@@ -36,5 +38,5 @@ func main() {
 
 	seedDB(db)
 
-	app.Listen(":3000")
+	app.Listen(":" + cfg.Port)
 }

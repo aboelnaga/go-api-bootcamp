@@ -167,7 +167,7 @@
   - Every request prints a log line in the server terminal.
   - Responses include `Access-Control-Allow-Origin` and `X-Request-ID` headers.
 
-### Day 13 – [ ] Environment config
+### Day 13 – [x] Environment config
 
 - **Objective**: Add environment-based configuration using a `.env` file.
 - **What you'll learn**: The `godotenv` package, `os.Getenv`, and separating config from code.
