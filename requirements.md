@@ -155,7 +155,7 @@
   - `go test ./...` passes with all tests green.
   - Each endpoint has at least one success and one failure test case.
 
-### Day 12 – [ ] Logging & CORS middleware
+### Day 12 – [x] Logging & CORS middleware
 
 - **Objective**: Add middleware for request logging and CORS.
 - **What you'll learn**: How Fiber middleware works, request lifecycle, and cross-origin resource sharing.
