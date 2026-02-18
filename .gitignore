@@ -1,1 +1,6 @@
 .env
+*.db
+*_db-shm
+*_db-wal
+bin/
+tmp/
