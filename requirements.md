@@ -240,3 +240,114 @@
 - **Done when**:
   - The API is accessible at a public URL.
   - All curl commands work against the deployed version.
+
+---
+
+## Phase 2 — Go deeper on Go
+
+### Day 19 – [ ] Graceful shutdown
+
+- **Objective**: Handle OS signals so the server finishes in-flight requests before stopping.
+- **What you'll learn**: `os/signal`, `context`, and production-safe shutdown patterns.
+- **Done when**:
+  - `Ctrl+C` waits for active requests to finish before exiting.
+  - A log line confirms graceful shutdown.
+
+### Day 20 – [ ] Background jobs with goroutines
+
+- **Objective**: Run a task asynchronously after an HTTP request returns.
+- **What you'll learn**: Goroutines, channels, and Go's concurrency model in a practical context.
+- **Done when**:
+  - Creating a task triggers a background goroutine (e.g. logs creation asynchronously).
+  - The HTTP response is not delayed by the background work.
+
+---
+
+## Phase 3 — System design foundations
+
+### Day 21 – [ ] Load balancer with Nginx
+
+- **Objective**: Run two instances of the API behind an Nginx reverse proxy.
+- **What you'll learn**: Load balancing concepts, upstream configuration, and horizontal scaling basics.
+- **Done when**:
+  - Two API instances run on different ports.
+  - Nginx distributes requests between them in round-robin.
+
+### Day 22 – [ ] Proper package structure
+
+- **Objective**: Refactor into `internal/` sub-packages with interfaces and dependency injection.
+- **What you'll learn**: Go package conventions, interfaces, and testable architecture.
+- **Done when**:
+  - Handlers depend on interfaces, not concrete GORM types.
+  - Each package has a single clear responsibility.
+
+### Day 23 – [ ] PostgreSQL
+
+- **Objective**: Swap SQLite for PostgreSQL.
+- **What you'll learn**: Connection pooling, indexes, query explain plans, and production databases.
+- **Done when**:
+  - All endpoints work with Postgres.
+  - An index is added and verified with `EXPLAIN ANALYZE`.
+
+---
+
+## Phase 4 — Distributed systems
+
+### Day 24 – [ ] Message queue (Kafka or RabbitMQ)
+
+- **Objective**: Publish an event when a task is created; consume it in a separate service.
+- **What you'll learn**: Producer/consumer pattern, async communication, event-driven architecture.
+- **Done when**:
+  - Task creation publishes a message to a queue.
+  - A consumer service reads and logs the message.
+
+### Day 25 – [ ] Caching with Redis
+
+- **Objective**: Cache the `GET /tasks` response in Redis.
+- **What you'll learn**: Cache-aside pattern, TTL, and cache invalidation.
+- **Done when**:
+  - Repeated `GET /tasks` calls are served from Redis.
+  - Cache is invalidated when a task is created or updated.
+
+### Day 26 – [ ] Full-text search with Elasticsearch
+
+- **Objective**: Add full-text search to tasks via Elasticsearch.
+- **What you'll learn**: Indexing, search queries, and when to use a search engine vs a DB.
+- **Done when**:
+  - `GET /tasks?q=keyword` returns tasks matching the keyword via Elasticsearch.
+
+### Day 27 – [ ] Columnar DB with ClickHouse
+
+- **Objective**: Stream task events into ClickHouse and build a simple analytics query.
+- **What you'll learn**: Columnar storage, OLAP vs OLTP, and analytics query patterns.
+- **Done when**:
+  - Task creation events are inserted into ClickHouse.
+  - A query returns task creation counts grouped by day.
+
+---
+
+## Phase 5 — Microservices
+
+### Day 28 – [ ] Split into services
+
+- **Objective**: Extract auth and notifications into separate services.
+- **What you'll learn**: Service boundaries, inter-service HTTP/gRPC communication, and the real cost of microservices.
+- **Done when**:
+  - Auth service issues JWTs independently.
+  - Task service validates tokens by calling the auth service.
+
+### Day 29 – [ ] API gateway
+
+- **Objective**: Add an API gateway in front of all services.
+- **What you'll learn**: Routing, auth delegation, rate limiting at the gateway level.
+- **Done when**:
+  - All client requests go through the gateway.
+  - The gateway forwards to the correct service based on the path.
+
+### Day 30 – [ ] Service discovery
+
+- **Objective**: Services find each other dynamically instead of hardcoded URLs.
+- **What you'll learn**: Consul or Kubernetes-style service discovery basics.
+- **Done when**:
+  - Services register themselves on startup.
+  - The gateway resolves service addresses dynamically.
