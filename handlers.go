@@ -12,19 +12,38 @@ func healthHandler(c fiber.Ctx) error {
 
 func getTasksHandler(c fiber.Ctx) error {
 	var tasks []Task
-	query := c.Query("completed")
+	var total int64
 
-	if query != "" {
-		completed, err := strconv.ParseBool(query)
+	page, err := strconv.Atoi(c.Query("page", "1"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid query parameters"})
+	}
+
+	limit, err := strconv.Atoi(c.Query("limit", "10"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid query parameters"})
+	}
+
+	offset := (page - 1) * limit
+
+	if c.Query("completed") != "" {
+		completed, err := strconv.ParseBool(c.Query("completed"))
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid query parameter 'completed'"})
 		}
-		db.Where("completed = ?", completed).Find(&tasks)
+		db.Model(&Task{}).Where("completed = ?", completed).Count(&total)
+		db.Where("completed = ?", completed).Offset(offset).Limit(limit).Find(&tasks)
 	} else {
-		db.Find(&tasks)
+		db.Model(&Task{}).Count(&total)
+		db.Offset(offset).Limit(limit).Find(&tasks)
 	}
 
-	return c.JSON(tasks)
+	return c.JSON(fiber.Map{
+		"tasks": tasks,
+		"page":  page,
+		"limit": limit,
+		"total": total,
+	})
 }
 
 func getTaskByIdHandler(c fiber.Ctx) error {

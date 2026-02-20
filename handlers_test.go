@@ -14,6 +14,13 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+type paginatedResponse struct {
+	Tasks []Task `json:"tasks"`
+	Page  int    `json:"page"`
+	Limit int    `json:"limit"`
+	Total int64  `json:"total"`
+}
+
 func setupTestApp(t *testing.T) *fiber.App {
 	t.Helper() // makes error messages point to the test, not this function
 
@@ -187,6 +194,45 @@ func TestGetTasks(t *testing.T) {
 			query:        "?completed=notabool",
 			expectedCode: http.StatusBadRequest,
 		},
+		{
+			name: "filter page=1&limit=2",
+			seed: func() {
+				db.Create(&Task{Title: "Incomplete"})
+				db.Create(&Task{Title: "Done", Completed: true})
+				db.Create(&Task{Title: "Another Incomplete"})
+			},
+			query:         "?page=1&limit=2",
+			expectedCode:  http.StatusOK,
+			expectedCount: 2,
+		},
+		{
+			name: "filter page=2&limit=2",
+			seed: func() {
+				db.Create(&Task{Title: "Incomplete"})
+				db.Create(&Task{Title: "Done", Completed: true})
+				db.Create(&Task{Title: "Another Incomplete"})
+			},
+			query:         "?page=2&limit=2",
+			expectedCode:  http.StatusOK,
+			expectedCount: 1, // only 1 task on the second page
+		},
+		{
+			name:         "invalid page/limit returns 400",
+			seed:         func() {},
+			query:        "?page=abc&limit=def",
+			expectedCode: http.StatusBadRequest,
+		},
+		{
+			name: "filter completed=true&page=1&limit=3",
+			seed: func() {
+				db.Create(&Task{Title: "Incomplete"})
+				db.Create(&Task{Title: "Done", Completed: true})
+				db.Create(&Task{Title: "Another Incomplete"})
+			},
+			query:         "?completed=true&page=1&limit=3",
+			expectedCode:  http.StatusOK,
+			expectedCount: 1, // only 1 task on the first page
+		},
 	}
 
 	for _, tt := range tests {
@@ -203,10 +249,10 @@ func TestGetTasks(t *testing.T) {
 
 			// Only check the count for successful responses
 			if tt.expectedCode == http.StatusOK {
-				var tasks []Task
-				readBody(t, resp, &tasks)
-				if len(tasks) != tt.expectedCount {
-					t.Errorf("expected %d tasks, got %d", tt.expectedCount, len(tasks))
+				var result paginatedResponse
+				readBody(t, resp, &result)
+				if len(result.Tasks) != tt.expectedCount {
+					t.Errorf("expected %d tasks, got %d", tt.expectedCount, len(result.Tasks))
 				}
 			}
 		})
