@@ -180,7 +180,7 @@
   - Changing `PORT=4000` in `.env` makes the server start on port 4000.
   - The app works with default values if `.env` is missing.
 
-### Day 14 – [ ] Pagination
+### Day 14 – [x] Pagination
 
 - **Objective**: Add pagination to `GET /tasks`.
 - **What you'll learn**: Query parameters, GORM `Offset`/`Limit`, and pagination response patterns.
