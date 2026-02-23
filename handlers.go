@@ -2,9 +2,37 @@ package main
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/golang-jwt/jwt/v5"
 )
+
+func loginHandler(c fiber.Ctx) error {
+	type LoginRequest struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+
+	var req LoginRequest
+	if err := c.Bind().Body(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+
+	if req.Username == "admin" && req.Password == "secret" {
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+			"username": req.Username,
+			"exp":      time.Now().Add(time.Hour * 24).Unix(),
+		})
+
+		tokenString, err := token.SignedString([]byte(jwtSecret))
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to generate token"})
+		}
+		return c.JSON(fiber.Map{"token": tokenString})
+	}
+	return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid credentials"})
+}
 
 func healthHandler(c fiber.Ctx) error {
 	return c.JSON(map[string]string{"status": "ok"})

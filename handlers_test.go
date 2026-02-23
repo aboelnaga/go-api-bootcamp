@@ -54,6 +54,77 @@ func readBody(t *testing.T, resp *http.Response, target any) {
 	}
 }
 
+func getAuthToken(t *testing.T, app *fiber.App) string {
+	t.Helper()
+	loginBody := `{"username":"admin","password":"secret"}`
+	req, _ := http.NewRequest(http.MethodPost, "/login", bytes.NewBufferString(loginBody))
+	req.Header.Set("Content-Type", "application/json")
+	resp, _ := app.Test(req)
+
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("expected 200 from /login, got %d", resp.StatusCode)
+	}
+
+	var result map[string]any
+	readBody(t, resp, &result)
+	token, ok := result["token"].(string)
+	if !ok {
+		t.Fatal("expected token in login response")
+	}
+	return token
+}
+
+func TestLoginHandler(t *testing.T) {
+	app := setupTestApp(t)
+
+	tests := []struct {
+		name         string
+		body         string
+		expectedCode int
+	}{
+		{
+			name:         "valid credentials return token",
+			body:         `{"username":"admin","password":"secret"}`,
+			expectedCode: http.StatusOK,
+		},
+		{
+			name:         "invalid credentials return 401",
+			body:         `{"username":"admin","password":"wrong"}`,
+			expectedCode: http.StatusUnauthorized,
+		},
+		{
+			name:         "missing fields return 401",
+			body:         `{"username":"admin"}`,
+			expectedCode: http.StatusUnauthorized,
+		},
+		{
+			name:         "missing fields return 400",
+			body:         ``,
+			expectedCode: http.StatusBadRequest,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, _ := http.NewRequest(http.MethodPost, "/login", bytes.NewBufferString(tt.body))
+			req.Header.Set("Content-Type", "application/json")
+			resp, _ := app.Test(req)
+
+			if resp.StatusCode != tt.expectedCode {
+				t.Errorf("expected status %d, got %d", tt.expectedCode, resp.StatusCode)
+			}
+
+			if tt.expectedCode == http.StatusOK {
+				var result map[string]any
+				readBody(t, resp, &result)
+				if _, ok := result["token"].(string); !ok {
+					t.Error("expected token in response")
+				}
+			}
+		})
+	}
+}
+
 func TestHealthHandler(t *testing.T) {
 	app := setupTestApp(t)
 	req, _ := http.NewRequest(http.MethodGet, "/health", nil)
@@ -95,10 +166,12 @@ func TestCreateTaskHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			app := setupTestApp(t) // fresh DB each subtest
+			app := setupTestApp(t)        // fresh DB each subtest
+			token := getAuthToken(t, app) // get a valid token for auth
 
 			req, _ := http.NewRequest(http.MethodPost, "/tasks", bytes.NewBufferString(tt.body))
 			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Authorization", "Bearer "+token)
 			resp, _ := app.Test(req)
 
 			if resp.StatusCode != tt.expectedCode {
@@ -115,11 +188,13 @@ func TestCreateTaskIncrementalIDs(t *testing.T) {
 	// Create 3 tasks and collect their IDs
 	titles := []string{"First", "Second", "Third"}
 	var ids []float64
+	token := getAuthToken(t, app) // get a valid token for auth
 
 	for _, title := range titles {
 		body := `{"title":"` + title + `"}`
 		req, _ := http.NewRequest(http.MethodPost, "/tasks", bytes.NewBufferString(body))
 		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", "Bearer "+token)
 		resp, _ := app.Test(req)
 
 		if resp.StatusCode != http.StatusCreated {
@@ -351,9 +426,11 @@ func TestUpdateTask(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			app := setupTestApp(t)
 			tt.seed()
+			token := getAuthToken(t, app)
 
 			req, _ := http.NewRequest(http.MethodPut, "/tasks/"+tt.id, bytes.NewBufferString(tt.body))
 			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Authorization", "Bearer "+token)
 			resp, _ := app.Test(req)
 
 			if resp.StatusCode != tt.expectedCode {
@@ -409,8 +486,10 @@ func TestDeleteTask(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			app := setupTestApp(t)
 			tt.seed()
+			token := getAuthToken(t, app) // get a valid token for auth
 
 			req, _ := http.NewRequest(http.MethodDelete, "/tasks/"+tt.id, nil)
+			req.Header.Set("Authorization", "Bearer "+token)
 			resp, _ := app.Test(req)
 
 			if resp.StatusCode != tt.expectedCode {

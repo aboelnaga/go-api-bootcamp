@@ -192,7 +192,7 @@
   - `curl http://localhost:3000/tasks?page=1&limit=1` returns 1 task and correct pagination metadata.
   - `curl http://localhost:3000/tasks` still works with default pagination.
 
-### Day 15 – [ ] JWT authentication
+### Day 15 – [x] JWT authentication
 
 - **Objective**: Add JWT authentication to protect write endpoints.
 - **What you'll learn**: JSON Web Tokens, auth middleware, and protecting routes.
