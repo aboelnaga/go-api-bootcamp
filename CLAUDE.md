@@ -40,4 +40,33 @@ Act as an experienced Go instructor. The user is a beginner learning Go by build
 - Add handlers in `handlers.go`, register in `routes.go`
 
 ## Current progress
-Days 2–12 are complete. See `requirements.md` for details.
+Days 2–15 are complete. See `requirements.md` for details.
+
+## Session notes
+
+During every `/day` session, maintain a notes file at `notes/dayXX-<slug>.md` (e.g. `notes/day16-docker.md`).
+
+**When to write**: create or update the file at the start of the day's session, and keep it updated as the session progresses. Do not wait until the end.
+
+**What to capture**:
+- Concepts explained (the "why" and "how")
+- Key takeaways and patterns introduced
+- Every question the user asks, with the answer given
+- Gotchas or tricky points encountered during implementation
+
+**Note file format**:
+```
+# Day XX – <Topic>
+
+## Concepts
+...
+
+## Key takeaways
+...
+
+## Q&A
+**Q:** ...
+**A:** ...
+```
+
+**Pre-compact**: Before context is auto-compacted, write all pending session content to the notes file. This is also triggered by the PreCompact hook — see `.claude/settings.json`.
