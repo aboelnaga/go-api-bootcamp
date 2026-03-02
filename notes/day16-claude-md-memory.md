@@ -165,9 +165,43 @@ The outer item can have an optional `matcher` (for tool-specific hooks like Post
 
 ---
 
+## Q&A
+
+**Q:** When running `/memory`, got a settings error: `hooks: Expected array, but received undefined`
+**A:** The hooks format changed in a recent Claude Code update. Old format had hook properties (like `prompt`) directly in the array item. New format wraps them in a nested `hooks` array with an explicit `type`:
+```json
+// Old (broken)
+"PreCompact": [{ "prompt": "..." }]
+
+// New (correct)
+"PreCompact": [{ "hooks": [{ "type": "prompt", "prompt": "..." }] }]
+```
+The outer item can optionally have a `matcher` (used for tool-specific hooks like PostToolUse). The inner `hooks` array contains the actual hook definitions with `type` + type-specific fields.
+
+**Q:** What are the JSONL files and folders in `~/.claude/projects/<project>/`?
+**A:** That directory is Claude Code's full local database for the project — not just memory. Structure:
+- `<uuid>.jsonl` — one file per conversation session (JSON Lines: one message per line)
+- `<uuid>/subagents/agent-<id>.jsonl` — subagent conversations spawned via the Task tool, nested under the parent session
+- `sessions-index.json` — lightweight index for listing recent sessions quickly (powers `/resume`)
+- `memory/MEMORY.md` — the auto-memory file; first 200 lines injected into every new session
+
+**Q:** Is there a way to access old conversations in Claude Code?
+**A:** Yes. Two ways: (1) `claude --resume <session-id>` from the terminal; (2) type `/resume` inside a session to get a list of recent sessions for the current project and pick one. The session ID is the UUID in the JSONL filename.
+
+**Q:** What are subagents?
+**A:** Separate Claude instances spawned by the main session via the Task tool. Benefits: (1) parallelism — run independent tasks simultaneously; (2) context isolation — subagent output doesn't bloat the main conversation. Their full conversation is stored in `subagents/agent-<id>.jsonl` nested under the parent session folder.
+
+**Q:** When running `/init` in a subdirectory, it updated the parent project's CLAUDE.md instead of creating a new one — why?
+**A:** `/init` walks up the directory tree first. If it finds an existing CLAUDE.md in a parent, it updates that file rather than creating a duplicate. It only creates a new file if no CLAUDE.md exists anywhere in the tree above. To get a project-specific one, create an empty CLAUDE.md manually in the project root first — then `/init` will update that local file next time.
+
+**Q:** Claude is reading parent project files when running in a subdirectory — is that expected?
+**A:** Yes. Claude Code walks up the directory tree at startup and loads every CLAUDE.md it finds (e.g. `~/github/CLAUDE.md`, `~/github/go/CLAUDE.md`, `~/github/go/helloworld/CLAUDE.md`). All are merged, with deeper/closer files taking higher priority. Same concept as `.gitignore`. This means you can put shared instructions for all Go projects in `~/github/go/CLAUDE.md` without repeating them in every project.
+
+---
+
 ## Exercises checklist
-- [ ] Open/create `~/.claude/CLAUDE.md` and add 2–3 global personal preferences
-- [ ] Improve one section of the project `CLAUDE.md`
-- [ ] Run `/memory` in a session and explore what's been saved
-- [ ] Run `/init` in a fresh directory and observe the generated output
-- [ ] Be able to explain the precedence order verbally
+- [x] Open/create `~/.claude/CLAUDE.md` and add 2–3 global personal preferences
+- [x] Improve one section of the project `CLAUDE.md` (updated "Current progress" line)
+- [x] Run `/memory` in a session and explore what's been saved
+- [x] Run `/init` in a fresh directory and observe the generated output
+- [x] Be able to explain the precedence order verbally

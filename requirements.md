@@ -235,7 +235,7 @@ These are the commands you'll use most. Each day reinforces them in context.
   - `POST /login` returns a JWT token.
   - `POST /tasks` with a valid `Authorization` header succeeds.
 
-### Day 16 – [ ] CC: CLAUDE.md and Memory
+### Day 16 – [x] CC: CLAUDE.md and Memory
 
 > **Claude Code refresher** — no Go code today. You'll learn how Claude Code loads instructions and remembers context across sessions.
 > *Why now?* You've built a solid API foundation. Before adding DevOps complexity, it's worth understanding how to configure Claude as a project-aware assistant.
