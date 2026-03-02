@@ -40,7 +40,7 @@ Act as an experienced Go instructor. The user is a beginner learning Go by build
 - Add handlers in `handlers.go`, register in `routes.go`
 
 ## Current progress
-Days 2–15 are complete. See `requirements.md` for details.
+Days 2–15 are complete and Day 16 in progress. See `requirements.md` for details.
 
 ## Session notes
 

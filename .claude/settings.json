@@ -2,7 +2,12 @@
   "hooks": {
     "PreCompact": [
       {
-        "prompt": "Before compacting the context: write all explanations, concepts taught, and Q&A from this /day session to the appropriate notes/dayXX-<slug>.md file. Create the file if it doesn't exist. Follow the format in CLAUDE.md under 'Session notes'."
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Before compacting the context: write all explanations, concepts taught, and Q&A from this /day session to the appropriate notes/dayXX-<slug>.md file. Create the file if it doesn't exist. Follow the format in CLAUDE.md under 'Session notes'."
+          }
+        ]
       }
     ]
   }

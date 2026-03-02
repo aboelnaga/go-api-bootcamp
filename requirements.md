@@ -16,6 +16,36 @@
   - `PUT /tasks/:id`: update an existing task
   - `DELETE /tasks/:id`: delete a task
 
+---
+
+### Bash quick reference
+
+These are the commands you'll use most. Each day reinforces them in context.
+
+| Command | What it does |
+|---------|-------------|
+| `ls -la` | List all files including hidden ones, with permissions |
+| `cat <file>` | Print a file's contents to the terminal |
+| `touch <file>` | Create an empty file |
+| `mkdir -p <path>` | Create a directory (and any missing parents) |
+| `rm <file>` | Delete a file |
+| `rm -rf <dir>` | Delete a directory and everything in it (irreversible — be careful) |
+| `cp <src> <dst>` | Copy a file |
+| `mv <src> <dst>` | Move or rename a file |
+| `pwd` | Print the current working directory |
+| `cd <path>` | Change directory |
+| `code <file>` | Open a file in VS Code from the terminal |
+| `nano <file>` | Open a file in nano (simple terminal editor; `Ctrl+X` to exit) |
+| `echo $?` | Print the exit code of the last command (0 = success) |
+| `export KEY=val` | Set an environment variable for the current session |
+| `env \| grep KEY` | List env vars filtered by keyword |
+| `which <cmd>` | Show the full path to a command binary |
+| `<cmd> &` | Run a command in the background |
+| `kill <pid>` | Stop a process by its PID |
+| `lsof -i :<port>` | Find what process is using a port |
+
+---
+
 ### Day 2 – [x] Health check endpoint
 
 - **Objective**: Have a running Fiber server with a simple health check endpoint.
@@ -73,7 +103,7 @@
 - **Behavior**:
   - Accepts JSON body with updatable fields (e.g. `title`, `description`, `completed`).
   - Finds the task by `id` in the `tasks` slice.
-  - Updates the task’s fields while keeping `id` and `createdAt` unchanged.
+  - Updates the task's fields while keeping `id` and `createdAt` unchanged.
   - Returns HTTP `200 OK` with the updated task as JSON when `id` exists.
   - Returns HTTP `404 Not Found` with `{"error": "task not found"}` when `id` does not exist.
 - **Done when**:
@@ -223,6 +253,11 @@
   - In this repo, improve one section of the existing `CLAUDE.md`.
   - Run `/memory` inside a session and explore what Claude has saved.
   - Run `/init` in a fresh directory and see what it generates.
+- **Bash practice**:
+  - `ls -la ~/.claude/` — list all files (including hidden ones) in your Claude config directory
+  - `cat ~/.claude/CLAUDE.md` — print a file to the terminal without opening an editor
+  - `mkdir -p ~/.claude/rules` — create a directory and any missing parents in one step
+  - `code ~/.claude/CLAUDE.md` — open a file in VS Code from the terminal
 - **Done when**:
   - You can explain the precedence order: managed policy → project → user → local.
   - You've verified your global `~/.claude/CLAUDE.md` is being loaded (ask Claude what its instructions are).
@@ -236,6 +271,11 @@
   - Create a `Dockerfile` with a multi-stage build (build stage with `golang` image, run stage with `alpine`).
   - Create a `docker-compose.yml` for easy local development.
   - Ensure the SQLite database file is persisted using a Docker volume.
+- **Bash practice**:
+  - `touch Dockerfile` — create an empty file (then open it with `code Dockerfile`)
+  - `docker ps` — list running containers and their IDs
+  - `docker logs <container_id>` — stream stdout/stderr from a container
+  - `docker exec -it <container_id> sh` — open an interactive shell inside a running container
 - **Done when**:
   - `docker compose up` starts the API and all curl commands work against it.
   - Restarting the container preserves task data.
@@ -248,6 +288,10 @@
   - Install `swaggo/swag` and `swaggo/fiber-swagger`.
   - Add Swagger annotation comments to each handler function.
   - Serve the Swagger UI at `/swagger/*`.
+- **Bash practice**:
+  - `go install github.com/swaggo/swag/cmd/swag@latest` — install a Go CLI tool to your `$GOPATH/bin`
+  - `which swag` — confirm the binary is on your `$PATH` (should print its full path)
+  - `swag init` — generate the `docs/` folder from annotation comments
 - **Done when**:
   - Visiting `http://localhost:3000/swagger/index.html` shows interactive API docs.
   - All endpoints are documented with request/response examples.
@@ -260,6 +304,10 @@
   - Choose a platform (Railway, Render, or Fly.io — all have free tiers).
   - Configure production environment variables.
   - Deploy and verify all endpoints work with the public URL.
+- **Bash practice**:
+  - `export PORT=4000` — set an env var for the current shell session only
+  - `env | grep PORT` — list all env vars and filter by keyword using a pipe
+  - `curl -I https://your-app.example.com/health` — send a HEAD request (headers only, no body) to check if a deployment is live
 - **Done when**:
   - The API is accessible at a public URL.
   - All curl commands work against the deployed version.
@@ -282,6 +330,10 @@
   2. Create `~/.claude/skills/review/SKILL.md` — a `/review` skill that checks code for security issues and code quality.
   3. Create a project-level `.claude/skills/day/SKILL.md` that wraps the existing day skill logic.
   4. Test all three skills in a session.
+- **Bash practice**:
+  - `mkdir -p ~/.claude/skills/commit` — create nested directories in one command
+  - `touch ~/.claude/skills/commit/SKILL.md` — create the file, then `code` it to edit
+  - `cat ~/.claude/skills/commit/SKILL.md` — quickly read a small file without leaving the terminal
 - **Skill frontmatter reference**:
   ```yaml
   ---
@@ -307,6 +359,10 @@
 
 - **Objective**: Handle OS signals so the server finishes in-flight requests before stopping.
 - **What you'll learn**: `os/signal`, `context`, and production-safe shutdown patterns.
+- **Bash practice**:
+  - `lsof -i :3000` — find which process (and its PID) is listening on port 3000
+  - `kill -SIGTERM <pid>` — send a graceful shutdown signal (ask the process to stop cleanly)
+  - `ps aux | grep helloworld` — list running processes and filter by name to find the PID
 - **Done when**:
   - `Ctrl+C` waits for active requests to finish before exiting.
   - A log line confirms graceful shutdown.
@@ -315,6 +371,10 @@
 
 - **Objective**: Run a task asynchronously after an HTTP request returns.
 - **What you'll learn**: Goroutines, channels, and Go's concurrency model in a practical context.
+- **Bash practice**:
+  - `go run . &` — start the server in the background so you keep your terminal free
+  - `jobs` — list all background jobs running in the current shell session
+  - `fg %1` — bring background job #1 back to the foreground
 - **Done when**:
   - Creating a task triggers a background goroutine (e.g. logs creation asynchronously).
   - The HTTP response is not delayed by the background work.
@@ -344,6 +404,10 @@
   2. Use `/hooks` to add a `PostToolUse` hook that runs `go fmt ./...` after any Go file is edited.
   3. Add a `PreCompact` hook that writes a "compacting…" message to a log file.
   4. Test by editing a `.go` file and confirm formatting runs automatically.
+- **Bash practice**:
+  - `chmod +x myscript.sh` — make a shell script executable (required before you can run it with `./`)
+  - `./myscript.sh` — run a script in the current directory (the `./` tells the shell to look here, not in `$PATH`)
+  - `echo $?` — print the exit code of the last command; hooks use this (0 = success, 2 = block)
 - **Done when**:
   - You can read `.claude/settings.json` and explain what each section does.
   - At least one hook is working end-to-end.
@@ -357,6 +421,10 @@
 
 - **Objective**: Run two instances of the API behind an Nginx reverse proxy.
 - **What you'll learn**: Load balancing concepts, upstream configuration, and horizontal scaling basics.
+- **Bash practice**:
+  - `nginx -t` — test your Nginx config for syntax errors before reloading
+  - `tail -f /var/log/nginx/access.log` — stream a log file in real time (`Ctrl+C` to stop)
+  - `curl -w "%{http_code}" -o /dev/null -s http://localhost` — print only the HTTP status code of a request
 - **Done when**:
   - Two API instances run on different ports.
   - Nginx distributes requests between them in round-robin.
@@ -365,6 +433,10 @@
 
 - **Objective**: Refactor into `internal/` sub-packages with interfaces and dependency injection.
 - **What you'll learn**: Go package conventions, interfaces, and testable architecture.
+- **Bash practice**:
+  - `find . -name "*.go" -not -path "*/vendor/*"` — list all Go files in the project recursively
+  - `tree -I vendor` — show the directory tree (install with `brew install tree` on macOS)
+  - `wc -l handlers.go` — count the number of lines in a file
 - **Done when**:
   - Handlers depend on interfaces, not concrete GORM types.
   - Each package has a single clear responsibility.
@@ -399,6 +471,10 @@
   3. Use Plan mode with the spec to generate an implementation plan; export it to a file.
   4. Implement at least the first step of the plan using `/checkpoint` before each change.
   5. Use `/rewind` to undo one step and try a different approach.
+- **Bash practice**:
+  - `git stash` — temporarily shelve uncommitted changes so you can safely switch context
+  - `git stash pop` — restore the most recently stashed changes
+  - `git diff HEAD~1` — diff the current state against the commit before the last one
 - **Done when**:
   - You can switch between Normal/Auto-Accept/Plan modes confidently.
   - You've completed at least one full Plan → Execute → Verify cycle.
@@ -408,6 +484,10 @@
 
 - **Objective**: Swap SQLite for PostgreSQL.
 - **What you'll learn**: Connection pooling, indexes, query explain plans, and production databases.
+- **Bash practice**:
+  - `psql -U postgres -d taskdb` — connect to a PostgreSQL database interactively in the terminal
+  - `\dt` — list all tables (run this inside the `psql` shell)
+  - `pg_dump -U postgres taskdb > backup.sql` — export your entire database to a SQL file
 - **Done when**:
   - All endpoints work with Postgres.
   - An index is added and verified with `EXPLAIN ANALYZE`.
@@ -420,6 +500,10 @@
 
 - **Objective**: Publish an event when a task is created; consume it in a separate service.
 - **What you'll learn**: Producer/consumer pattern, async communication, event-driven architecture.
+- **Bash practice**:
+  - `docker compose logs -f kafka` — follow live logs for a specific Docker Compose service
+  - `docker compose exec kafka kafka-topics.sh --list --bootstrap-server localhost:9092` — run a command inside a running service container
+  - `curl -s http://localhost:3000/tasks | jq .` — pipe JSON output through `jq` to pretty-print it (`brew install jq`)
 - **Done when**:
   - Task creation publishes a message to a queue.
   - A consumer service reads and logs the message.
@@ -428,6 +512,10 @@
 
 - **Objective**: Cache the `GET /tasks` response in Redis.
 - **What you'll learn**: Cache-aside pattern, TTL, and cache invalidation.
+- **Bash practice**:
+  - `redis-cli ping` — confirm Redis is running (should return `PONG`)
+  - `redis-cli keys "*"` — list all keys currently in Redis
+  - `redis-cli ttl tasks:all` — check the remaining TTL (in seconds) of a specific cached key
 - **Done when**:
   - Repeated `GET /tasks` calls are served from Redis.
   - Cache is invalidated when a task is created or updated.
@@ -461,6 +549,10 @@
   3. In a session, use the GitHub server to fetch an issue or PR from a real repo.
   4. Create a `.mcp.json` in this project for the Postgres MCP server pointing at your local DB.
   5. Use `/mcp` in a session to authenticate and explore available tools.
+- **Bash practice**:
+  - `claude mcp list` — list installed MCP servers directly from the terminal
+  - `jq '.mcpServers' .mcp.json` — extract a specific field from a JSON config file
+  - `curl -H "Authorization: Bearer $TOKEN" https://api.example.com` — use an env var in a curl command (the shell substitutes `$TOKEN` before sending)
 - **Done when**:
   - At least one MCP server is installed and you've successfully used it from a session.
   - You understand the difference between local, project, and user scopes.
@@ -470,6 +562,10 @@
 
 - **Objective**: Add full-text search to tasks via Elasticsearch.
 - **What you'll learn**: Indexing, search queries, and when to use a search engine vs a DB.
+- **Bash practice**:
+  - `curl -X GET "localhost:9200/_cat/indices?v"` — list all Elasticsearch indices with stats
+  - `curl -s -X POST "localhost:9200/tasks/_search" -H "Content-Type: application/json" -d '{"query":{"match_all":{}}}' | jq .hits.total` — run a search and extract a nested field from the result
+  - `| jq '.hits.hits[].\_source'` — extract the `_source` field from every search result
 - **Done when**:
   - `GET /tasks?q=keyword` returns tasks matching the keyword via Elasticsearch.
 
@@ -477,6 +573,10 @@
 
 - **Objective**: Stream task events into ClickHouse and build a simple analytics query.
 - **What you'll learn**: Columnar storage, OLAP vs OLTP, and analytics query patterns.
+- **Bash practice**:
+  - `clickhouse-client --query "SHOW TABLES"` — run a ClickHouse query directly from the terminal
+  - `clickhouse-client --query "SELECT count() FROM task_events"` — count rows without opening an interactive session
+  - `time curl -s http://localhost:3000/tasks > /dev/null` — measure how long an HTTP request takes (the `time` prefix works with any command)
 - **Done when**:
   - Task creation events are inserted into ClickHouse.
   - A query returns task creation counts grouped by day.
@@ -489,6 +589,10 @@
 
 - **Objective**: Extract auth and notifications into separate services.
 - **What you'll learn**: Service boundaries, inter-service HTTP/gRPC communication, and the real cost of microservices.
+- **Bash practice**:
+  - `go run ./cmd/auth &` — run a specific `main` package (sub-directory) in the background
+  - `lsof -i -P -n | grep LISTEN` — list every port currently being listened on, with process names
+  - `curl -s http://localhost:8081/health | jq .` — test a service and pretty-print the JSON response in one line
 - **Done when**:
   - Auth service issues JWTs independently.
   - Task service validates tokens by calling the auth service.
@@ -536,6 +640,10 @@
   2. Add global hooks: `PostToolUse` for auto-formatting (language-aware), `Stop` to run tests.
   3. Write `~/.claude/rules/git-workflow.md` with your commit and branching conventions.
   4. Test each skill from this Go project and at least one other project directory.
+- **Bash practice**:
+  - `ln -s ~/.claude/settings.json ~/dotfiles/claude-settings.json` — create a symlink so a file lives in two places at once without duplicating it
+  - `git init && git remote add origin <url>` — turn your `~/.claude/` into a versioned dotfiles repo
+  - `source ~/.zshrc` — reload your shell config without closing and reopening the terminal
 - **Done when**:
   - Your `~/.claude/` directory is version-controlled (push it to a private dotfiles repo).
   - You have at least 3 working global skills.
@@ -545,6 +653,10 @@
 
 - **Objective**: Add an API gateway in front of all services.
 - **What you'll learn**: Routing, auth delegation, rate limiting at the gateway level.
+- **Bash practice**:
+  - `curl -v http://localhost:8080/tasks` — verbose mode: shows the full request and response headers, useful for debugging routing
+  - `watch -n1 "curl -s http://localhost:8080/health"` — re-run a command every second to monitor a live service
+  - `ab -n 100 -c 10 http://localhost:8080/tasks` — basic load test: 100 requests, 10 at a time (Apache Bench, pre-installed on macOS)
 - **Done when**:
   - All client requests go through the gateway.
   - The gateway forwards to the correct service based on the path.
@@ -553,6 +665,38 @@
 
 - **Objective**: Services find each other dynamically instead of hardcoded URLs.
 - **What you'll learn**: Consul or Kubernetes-style service discovery basics.
+- **Bash practice**:
+  - `consul members` — list all nodes registered with Consul
+  - `dig @127.0.0.1 -p 8600 task-service.service.consul` — resolve a service name through Consul's built-in DNS server
+  - `ss -tlnp` — list all open TCP listening ports with process names (modern replacement for `netstat`)
 - **Done when**:
   - Services register themselves on startup.
   - The gateway resolves service addresses dynamically.
+
+### Day 37 – [ ] CC: Multi-Agent Workflows
+
+> **Claude Code refresher** — no Go code today. You'll learn how Claude Code spawns and coordinates subagents to parallelize work and protect context.
+> *Why now?* You've built a distributed system across multiple services. Multi-agent workflows mirror that same "divide and conquer" pattern — but for AI-assisted development tasks.
+
+- **Objective**: Understand how Claude Code uses subagents and how to design multi-agent workflows.
+- **What you'll learn**: The Task tool, subagent types, parallel vs sequential agents, context isolation, the Claude Agent SDK.
+- **Key concepts**:
+  - **Subagents** are separate Claude instances spawned by the main session via the Task tool. Each gets its own context window.
+  - **Why subagents?** Two reasons: (1) parallelism — run multiple tasks at once; (2) context isolation — a subagent's output doesn't bloat the main conversation.
+  - **Subagent types** built into Claude Code: `Bash`, `Explore`, `Plan`, `general-purpose`, `claude-code-guide`, and more. Each has a fixed toolset.
+  - **Session storage**: subagent conversations are saved as `subagents/agent-<id>.jsonl` nested under the parent session's folder in `~/.claude/projects/`.
+  - **Claude Agent SDK**: the programmatic API for building multi-agent pipelines outside of Claude Code — useful for automating complex workflows in CI or tooling.
+  - **When to use parallel agents**: independent tasks (e.g. "search for X" and "search for Y" simultaneously). Never parallelize tasks that depend on each other's output.
+- **Exercises**:
+  1. In a session, ask Claude to use two parallel subagents: one to explore `handlers.go` and one to explore `routes.go` — observe how results are merged back.
+  2. Open `~/.claude/projects/<this-project>/` and find the `subagents/` folder from a past session. Read one JSONL file and identify the message types (user, assistant, tool use).
+  3. Read the [Claude Agent SDK docs](https://docs.anthropic.com/en/docs/claude-code/sdk) and identify one workflow from your own projects you could automate with it.
+  4. Use the built-in `/batch` command to make a parallel change across multiple files (e.g. add a comment to every handler function).
+- **Bash practice**:
+  - `ls ~/.claude/projects/<project>/` — list session files for a project
+  - `ls ~/.claude/projects/<project>/*/subagents/` — list all subagent JSONL files across sessions
+  - `wc -l ~/.claude/projects/<project>/<uuid>.jsonl` — count how many messages are in a session
+- **Done when**:
+  - You can explain the difference between the main agent and a subagent.
+  - You understand when to run agents in parallel vs sequentially.
+  - You've located and inspected a real subagent JSONL file from a past session.
