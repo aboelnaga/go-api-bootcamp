@@ -205,7 +205,30 @@
   - `POST /login` returns a JWT token.
   - `POST /tasks` with a valid `Authorization` header succeeds.
 
-### Day 16 – [ ] Docker
+### Day 16 – [ ] CC: CLAUDE.md and Memory
+
+> **Claude Code refresher** — no Go code today. You'll learn how Claude Code loads instructions and remembers context across sessions.
+> *Why now?* You've built a solid API foundation. Before adding DevOps complexity, it's worth understanding how to configure Claude as a project-aware assistant.
+
+- **Objective**: Understand how Claude Code loads instructions and remembers things across sessions.
+- **What you'll learn**: CLAUDE.md hierarchy, auto memory, rules/, local vs project vs user scope.
+- **Key concepts**:
+  - `CLAUDE.md` files are Claude's persistent instructions — loaded from the project root, `~/.claude/`, and walked up the directory tree.
+  - `~/.claude/CLAUDE.md` applies to every project; `CLAUDE.md` (or `.claude/CLAUDE.md`) applies to the current repo (check into git for team-sharing).
+  - `CLAUDE.local.md` is your personal project-level override (gitignored automatically).
+  - Auto memory: Claude writes notes to `~/.claude/projects/<project>/memory/MEMORY.md`; first 200 lines load at every session start.
+  - `.claude/rules/` lets you split instructions into modular files with optional `paths:` front-matter to scope rules to specific directories.
+- **Exercises**:
+  - Open `~/.claude/CLAUDE.md` (create it if missing) and add 2–3 personal global preferences (e.g. "always use 2-space indentation").
+  - In this repo, improve one section of the existing `CLAUDE.md`.
+  - Run `/memory` inside a session and explore what Claude has saved.
+  - Run `/init` in a fresh directory and see what it generates.
+- **Done when**:
+  - You can explain the precedence order: managed policy → project → user → local.
+  - You've verified your global `~/.claude/CLAUDE.md` is being loaded (ask Claude what its instructions are).
+  - You know how to view, edit, and disable auto memory.
+
+### Day 17 – [ ] Docker
 
 - **Objective**: Dockerize the application.
 - **What you'll learn**: Dockerfile, multi-stage builds, and container basics.
@@ -217,7 +240,7 @@
   - `docker compose up` starts the API and all curl commands work against it.
   - Restarting the container preserves task data.
 
-### Day 17 – [ ] Swagger docs
+### Day 18 – [ ] Swagger docs
 
 - **Objective**: Add Swagger/OpenAPI documentation to the API.
 - **What you'll learn**: API documentation with `swaggo/swag`, annotation comments, and auto-generated docs.
@@ -229,7 +252,7 @@
   - Visiting `http://localhost:3000/swagger/index.html` shows interactive API docs.
   - All endpoints are documented with request/response examples.
 
-### Day 18 – [ ] Deploy to cloud
+### Day 19 – [ ] Deploy to cloud
 
 - **Objective**: Deploy the API to a free cloud platform.
 - **What you'll learn**: Cloud deployment, environment variables in production, and basic DevOps.
@@ -241,11 +264,46 @@
   - The API is accessible at a public URL.
   - All curl commands work against the deployed version.
 
+### Day 20 – [ ] CC: Skills and Cross-Project Commands
+
+> **Claude Code refresher** — no Go code today. You'll build custom slash commands that travel with you across every project.
+> *Why now?* You've just deployed a real API and have real workflows (commit, review, deploy). Time to automate them.
+
+- **Objective**: Create custom slash commands that work in any project.
+- **What you'll learn**: Skill frontmatter, `$ARGUMENTS`, user-level vs project-level skills, dynamic context injection with `!`.
+- **Key concepts**:
+  - Skills live in `~/.claude/skills/<name>/SKILL.md` (global) or `.claude/skills/<name>/SKILL.md` (project).
+  - Invoke with `/<name>` in any Claude Code session.
+  - Frontmatter controls model, tools, context, and invocation permissions.
+  - `$ARGUMENTS` passes arguments; `` !`command` `` runs shell commands before Claude sees the prompt.
+  - `disable-model-invocation: true` means only you can trigger it (Claude won't auto-invoke it).
+- **Exercises**:
+  1. Create `~/.claude/skills/commit/SKILL.md` — a `/commit` skill that reads `git diff --cached` and writes a conventional commit message.
+  2. Create `~/.claude/skills/review/SKILL.md` — a `/review` skill that checks code for security issues and code quality.
+  3. Create a project-level `.claude/skills/day/SKILL.md` that wraps the existing day skill logic.
+  4. Test all three skills in a session.
+- **Skill frontmatter reference**:
+  ```yaml
+  ---
+  name: commit
+  description: Write a conventional commit after reviewing staged diff
+  disable-model-invocation: true
+  allowed-tools: Bash(git *)
+  ---
+  1. Run: !`git diff --cached`
+  2. Write a conventional commit message (feat:, fix:, docs:, refactor:, test:)
+  3. Commit with: git commit -m "<message>"
+  ```
+- **Done when**:
+  - `/commit` works from any project directory.
+  - You understand the difference between user-level and project-level skills.
+  - You can explain when to use `disable-model-invocation: true`.
+
 ---
 
 ## Phase 2 — Go deeper on Go
 
-### Day 19 – [ ] Graceful shutdown
+### Day 21 – [ ] Graceful shutdown
 
 - **Objective**: Handle OS signals so the server finishes in-flight requests before stopping.
 - **What you'll learn**: `os/signal`, `context`, and production-safe shutdown patterns.
@@ -253,7 +311,7 @@
   - `Ctrl+C` waits for active requests to finish before exiting.
   - A log line confirms graceful shutdown.
 
-### Day 20 – [ ] Background jobs with goroutines
+### Day 22 – [ ] Background jobs with goroutines
 
 - **Objective**: Run a task asynchronously after an HTTP request returns.
 - **What you'll learn**: Goroutines, channels, and Go's concurrency model in a practical context.
@@ -261,11 +319,41 @@
   - Creating a task triggers a background goroutine (e.g. logs creation asynchronously).
   - The HTTP response is not delayed by the background work.
 
+### Day 23 – [ ] CC: Settings, Permissions, and Hooks
+
+> **Claude Code refresher** — no Go code today. You'll configure Claude Code's automation behavior using settings and hooks.
+> *Why now?* You're working with goroutines and concurrency — hooks like auto-run tests after edits become genuinely useful here.
+
+- **Objective**: Configure Claude Code's behavior at a fine-grained level using settings files and hooks.
+- **What you'll learn**: Settings hierarchy, permission rules, hook lifecycle events, hook types (command/http/prompt/agent).
+- **Key concepts**:
+  - Settings precedence: managed → CLI flags → local (`.claude/settings.local.json`) → project (`.claude/settings.json`) → user (`~/.claude/settings.json`).
+  - Permission rules use glob syntax: `"allow": ["Bash(npm run *)", "Read(~/.zshrc)"]`.
+  - Hooks fire on lifecycle events: `PreToolUse`, `PostToolUse`, `UserPromptSubmit`, `PreCompact`, `Stop`, etc.
+  - Hook I/O: JSON on stdin, exit code 0 = proceed, exit code 2 = block (write reason to stderr).
+- **Hook lifecycle events**:
+  | Event | Use for |
+  |-------|---------|
+  | `PostToolUse` (matcher: `Edit\|Write`) | Auto-format files after edits |
+  | `PreToolUse` (matcher: `Bash`) | Block dangerous commands |
+  | `PreCompact` | Save session notes before context compaction |
+  | `Stop` | Run tests after Claude finishes a task |
+  | `Notification` | Desktop alerts when Claude needs attention |
+- **Exercises**:
+  1. Open `~/.claude/settings.json` and add a permission rule that asks before `git push`.
+  2. Use `/hooks` to add a `PostToolUse` hook that runs `go fmt ./...` after any Go file is edited.
+  3. Add a `PreCompact` hook that writes a "compacting…" message to a log file.
+  4. Test by editing a `.go` file and confirm formatting runs automatically.
+- **Done when**:
+  - You can read `.claude/settings.json` and explain what each section does.
+  - At least one hook is working end-to-end.
+  - You can use `/status` to see which settings are active and where they came from.
+
 ---
 
 ## Phase 3 — System design foundations
 
-### Day 21 – [ ] Load balancer with Nginx
+### Day 24 – [ ] Load balancer with Nginx
 
 - **Objective**: Run two instances of the API behind an Nginx reverse proxy.
 - **What you'll learn**: Load balancing concepts, upstream configuration, and horizontal scaling basics.
@@ -273,7 +361,7 @@
   - Two API instances run on different ports.
   - Nginx distributes requests between them in round-robin.
 
-### Day 22 – [ ] Proper package structure
+### Day 25 – [ ] Proper package structure
 
 - **Objective**: Refactor into `internal/` sub-packages with interfaces and dependency injection.
 - **What you'll learn**: Go package conventions, interfaces, and testable architecture.
@@ -281,7 +369,42 @@
   - Handlers depend on interfaces, not concrete GORM types.
   - Each package has a single clear responsibility.
 
-### Day 23 – [ ] PostgreSQL
+### Day 26 – [ ] CC: Plan → Execute → Iterate Workflow
+
+> **Claude Code refresher** — no Go code today. You'll master structured, safe development using Claude Code's plan mode and iteration tools.
+> *Why now?* The upcoming PostgreSQL migration and distributed systems work are non-trivial refactors. Plan mode is exactly the right tool for those.
+
+- **Objective**: Master structured, safe development using Claude Code's plan mode and iteration tools.
+- **What you'll learn**: Plan mode, checkpoints, rewinding, context compaction, extended thinking.
+- **Key concepts**:
+  - **Plan mode**: Claude can only read files and ask questions — it cannot make changes. Toggle with `Shift+Tab` or `--permission-mode plan`.
+  - **Normal mode → Auto-Accept mode → Plan mode**: cycle with `Shift+Tab`.
+  - **Checkpoints**: use `/checkpoint` or `Esc+Esc` to save state; use `/rewind` to restore.
+  - **Extended thinking**: `Option+T` (macOS) toggles deeper reasoning; set effort with `CLAUDE_CODE_EFFORT_LEVEL=high`.
+  - **Context compaction**: `/compact <instructions>` summarizes the session; `PreCompact` hook saves notes before it happens.
+  - **SpecKit equivalent**: Claude Code does not have a dedicated spec runner, but you achieve the same effect by: (1) writing a spec in a `.md` file, (2) having Claude read it in Plan mode, (3) iterating in Normal mode with checkpoints.
+- **Recommended workflow for non-trivial features**:
+  ```
+  1. Write a spec file (e.g. docs/spec-feature.md) describing requirements
+  2. Enter Plan mode (Shift+Tab twice)
+  3. Ask Claude to read the spec and create an implementation plan
+  4. Refine the plan (ask follow-up questions)
+  5. Exit Plan mode → Claude implements
+  6. Run tests; if failing, /rewind and try a different approach
+  7. /compact to free context, then continue iteration
+  ```
+- **Exercises**:
+  1. Enter Plan mode, ask Claude to analyze `handlers.go` and propose a refactor — verify it makes no changes.
+  2. Write a `docs/spec-postgres-migration.md` with requirements for Day 27's PostgreSQL migration.
+  3. Use Plan mode with the spec to generate an implementation plan; export it to a file.
+  4. Implement at least the first step of the plan using `/checkpoint` before each change.
+  5. Use `/rewind` to undo one step and try a different approach.
+- **Done when**:
+  - You can switch between Normal/Auto-Accept/Plan modes confidently.
+  - You've completed at least one full Plan → Execute → Verify cycle.
+  - You know how to use checkpoints and rewind to recover from mistakes.
+
+### Day 27 – [ ] PostgreSQL
 
 - **Objective**: Swap SQLite for PostgreSQL.
 - **What you'll learn**: Connection pooling, indexes, query explain plans, and production databases.
@@ -293,7 +416,7 @@
 
 ## Phase 4 — Distributed systems
 
-### Day 24 – [ ] Message queue (Kafka or RabbitMQ)
+### Day 28 – [ ] Message queue (Kafka or RabbitMQ)
 
 - **Objective**: Publish an event when a task is created; consume it in a separate service.
 - **What you'll learn**: Producer/consumer pattern, async communication, event-driven architecture.
@@ -301,7 +424,7 @@
   - Task creation publishes a message to a queue.
   - A consumer service reads and logs the message.
 
-### Day 25 – [ ] Caching with Redis
+### Day 29 – [ ] Caching with Redis
 
 - **Objective**: Cache the `GET /tasks` response in Redis.
 - **What you'll learn**: Cache-aside pattern, TTL, and cache invalidation.
@@ -309,14 +432,48 @@
   - Repeated `GET /tasks` calls are served from Redis.
   - Cache is invalidated when a task is created or updated.
 
-### Day 26 – [ ] Full-text search with Elasticsearch
+### Day 30 – [ ] CC: MCP Servers
+
+> **Claude Code refresher** — no Go code today. You'll extend Claude Code with external tools via MCP servers.
+> *Why now?* You're using Redis, Kafka, and Postgres. MCP servers let Claude query these same services directly during development.
+
+- **Objective**: Extend Claude Code with external tools via MCP (Model Context Protocol) servers.
+- **What you'll learn**: MCP concepts, installing servers, scopes (local/project/user), OAuth, `@` resource mentions.
+- **Key concepts**:
+  - MCP servers expose tools, resources, and prompts to Claude Code via a standardized protocol.
+  - Three transports: `http` (recommended), `sse` (deprecated), `stdio` (local process).
+  - Scopes: `--scope local` (this project, personal), `--scope project` (`.mcp.json`, team-shared), `--scope user` (all projects).
+  - Resources can be referenced with `@server:resource-uri` in prompts.
+- **Installation examples**:
+  ```bash
+  # HTTP server
+  claude mcp add --transport http github https://api.githubcopilot.com/mcp/
+
+  # Local stdio server
+  claude mcp add --transport stdio postgres -- npx -y @modelcontextprotocol/server-postgres $DB_URL
+
+  # Project-scoped (committed to git)
+  claude mcp add --scope project --transport http notion https://mcp.notion.com/mcp
+  ```
+- **Exercises**:
+  1. Run `claude mcp list` to see currently installed servers.
+  2. Install the GitHub MCP server (requires a GitHub token): `claude mcp add --transport http github https://api.githubcopilot.com/mcp/`.
+  3. In a session, use the GitHub server to fetch an issue or PR from a real repo.
+  4. Create a `.mcp.json` in this project for the Postgres MCP server pointing at your local DB.
+  5. Use `/mcp` in a session to authenticate and explore available tools.
+- **Done when**:
+  - At least one MCP server is installed and you've successfully used it from a session.
+  - You understand the difference between local, project, and user scopes.
+  - You can explain when to commit `.mcp.json` to git (team tools) vs keep in `~/.claude.json` (personal).
+
+### Day 31 – [ ] Full-text search with Elasticsearch
 
 - **Objective**: Add full-text search to tasks via Elasticsearch.
 - **What you'll learn**: Indexing, search queries, and when to use a search engine vs a DB.
 - **Done when**:
   - `GET /tasks?q=keyword` returns tasks matching the keyword via Elasticsearch.
 
-### Day 27 – [ ] Columnar DB with ClickHouse
+### Day 32 – [ ] Columnar DB with ClickHouse
 
 - **Objective**: Stream task events into ClickHouse and build a simple analytics query.
 - **What you'll learn**: Columnar storage, OLAP vs OLTP, and analytics query patterns.
@@ -328,7 +485,7 @@
 
 ## Phase 5 — Microservices
 
-### Day 28 – [ ] Split into services
+### Day 33 – [ ] Split into services
 
 - **Objective**: Extract auth and notifications into separate services.
 - **What you'll learn**: Service boundaries, inter-service HTTP/gRPC communication, and the real cost of microservices.
@@ -336,7 +493,55 @@
   - Auth service issues JWTs independently.
   - Task service validates tokens by calling the auth service.
 
-### Day 29 – [ ] API gateway
+### Day 34 – [ ] CC: Global Developer Toolkit
+
+> **Claude Code refresher** — no Go code today. You'll build a personal library of reusable skills, settings, and hooks that work across all your projects.
+> *Why now?* You're managing multiple services. A global toolkit that works everywhere becomes essential, not optional.
+
+- **Objective**: Build a personal `~/.claude/` toolkit that travels to every project you work in.
+- **What you'll learn**: Structuring a personal toolkit, plugin distribution, common patterns the community uses.
+- **Your global toolkit structure**:
+  ```
+  ~/.claude/
+  ├── CLAUDE.md                    # Global personal instructions
+  ├── settings.json                # Global permissions and hooks
+  ├── skills/
+  │   ├── commit/SKILL.md          # Conventional commits
+  │   ├── review/SKILL.md          # Code review
+  │   ├── fix-issue/SKILL.md       # Fix GitHub issue by number
+  │   ├── pr/SKILL.md              # Create PR with description
+  │   ├── test-debug/SKILL.md      # Debug failing tests
+  │   └── doc/SKILL.md             # Generate/update docs
+  ├── rules/
+  │   ├── code-style.md            # Language-agnostic style rules
+  │   ├── git-workflow.md          # Commit and PR conventions
+  │   └── security.md             # Security checklist
+  └── agents/
+      └── reviewer/AGENT.md       # Dedicated code review agent
+  ```
+- **Common community skills**:
+  | Skill | What it does |
+  |-------|-------------|
+  | `/commit` | Stage, write conventional commit, commit |
+  | `/pr` | Push branch, open PR with summary |
+  | `/fix-issue <n>` | Fetch GitHub issue, implement fix, create PR |
+  | `/review` | Security + quality review of changed files |
+  | `/test-debug` | Analyze failing tests and suggest fixes |
+  | `/doc` | Add/update docstrings and README sections |
+  | `/simplify` | (built-in) Parallel code quality review |
+  | `/batch <instruction>` | (built-in) Large-scale parallel changes |
+  | `/debug` | (built-in) Troubleshoot Claude Code session |
+- **Exercises**:
+  1. Build out at least 3 skills in `~/.claude/skills/` that you'll actually use daily.
+  2. Add global hooks: `PostToolUse` for auto-formatting (language-aware), `Stop` to run tests.
+  3. Write `~/.claude/rules/git-workflow.md` with your commit and branching conventions.
+  4. Test each skill from this Go project and at least one other project directory.
+- **Done when**:
+  - Your `~/.claude/` directory is version-controlled (push it to a private dotfiles repo).
+  - You have at least 3 working global skills.
+  - You can onboard a new project in under 5 minutes using your global toolkit.
+
+### Day 35 – [ ] API gateway
 
 - **Objective**: Add an API gateway in front of all services.
 - **What you'll learn**: Routing, auth delegation, rate limiting at the gateway level.
@@ -344,7 +549,7 @@
   - All client requests go through the gateway.
   - The gateway forwards to the correct service based on the path.
 
-### Day 30 – [ ] Service discovery
+### Day 36 – [ ] Service discovery
 
 - **Objective**: Services find each other dynamically instead of hardcoded URLs.
 - **What you'll learn**: Consul or Kubernetes-style service discovery basics.
