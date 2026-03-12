@@ -263,7 +263,7 @@ These are the commands you'll use most. Each day reinforces them in context.
   - You've verified your global `~/.claude/CLAUDE.md` is being loaded (ask Claude what its instructions are).
   - You know how to view, edit, and disable auto memory.
 
-### Day 17 – [ ] Docker
+### Day 17 – [x] Docker
 
 - **Objective**: Dockerize the application.
 - **What you'll learn**: Dockerfile, multi-stage builds, and container basics.

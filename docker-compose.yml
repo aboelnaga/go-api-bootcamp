@@ -1,0 +1,10 @@
+services:
+  api:
+    build: . # build from the docker file in the current directory
+    ports:
+      - "3000:3000" # map port 3000 of the container to port 3000 on the host machine
+    environment:
+      - PORT=3000 # set the PORT environment variable to 3000
+      - DB_PATH=/app/data/tasks.db # set the DB_PATH environment variable to the path of the database file in the container
+    volumes:
+      - ./data:/app/data # mount the data directory on the host machine to the /app/data directory in the container
