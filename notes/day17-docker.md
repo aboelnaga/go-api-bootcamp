@@ -80,22 +80,20 @@ bin/
 
 ---
 
-## Session Q&A
+## Gotchas
 
-**Q:** What does `-rf` mean in `rm -rf`?
-**A:** `-r` = recursive (delete directory and all contents), `-f` = force (no confirmation, ignore missing files). Dangerous — no undo.
+- **Go version mismatch**: The `tool` directive in `go.mod` was introduced in Go 1.24. Using `golang:1.23-alpine` in the Dockerfile caused `go mod download` to fail with `unknown directive: tool`. Fix: match the Go image version to your `go.mod` version (`golang:1.25-alpine`).
+- **Volume permission error**: Docker can't create the `./data` host directory automatically on macOS. Create it manually with `mkdir -p data` before running `docker compose up`.
 
-**Q:** What does `-p` mean in `mkdir -p`?
-**A:** Parents — create missing parent directories in the path, and don't error if the directory already exists. Safe to use habitually.
+---
+
+## Q&A
 
 **Q:** What does `CMD` stand for in a Dockerfile?
 **A:** Just "command" — the command to run when the container starts.
 
 **Q:** What is the difference between `CMD` and `ENTRYPOINT`?
 **A:** `CMD` can be overridden at runtime (`docker run <image> ./other`). `ENTRYPOINT` is fixed unless you pass `--entrypoint`. For simple apps, `CMD` is the right choice.
-
-**Q:** What does `grep -o` do?
-**A:** `-o` = print only the matching part, not the whole line. Used with a pipe to extract a specific field from JSON output.
 
 **Q:** If I change code, does the container auto-update?
 **A:** No. Docker bakes your code into the image at build time. You must run `docker compose up --build` to pick up changes. Use `air` or `go run .` during development; Docker is for packaging and deployment.
@@ -106,18 +104,20 @@ bin/
 **Q:** Does `docker compose down` stop all containers on the machine?
 **A:** No — only the containers defined in the `docker-compose.yml` in the current directory. Use `docker ps` to see all running containers across all projects, and `docker ps -a` to include stopped ones.
 
-**Q:** What other Docker concepts are there to learn?
-**A:** The basics covered here are sufficient for now. More concepts come up naturally in later days: Docker networks (Day 24 — Nginx), running a database container (Day 27 — PostgreSQL), and multi-service compose files (Day 28 — Kafka/RabbitMQ).
-
-## Gotchas
-
-- **Go version mismatch**: The `tool` directive in `go.mod` was introduced in Go 1.24. Using `golang:1.23-alpine` in the Dockerfile caused `go mod download` to fail with `unknown directive: tool`. Fix: match the Go image version to your `go.mod` version (`golang:1.25-alpine`).
-- **Volume permission error**: Docker can't create the `./data` host directory automatically on macOS. Create it manually with `mkdir -p data` before running `docker compose up`.
-
-## Original Q&A
-
 **Q:** What does `.gitkeep` do?
 **A:** It's a convention, not a Git feature. Git doesn't track empty directories — it only tracks files. Placing an empty `.gitkeep` file inside a folder forces Git to include the folder in the repository. The name `.gitkeep` is just a widely-understood convention; the file could be named anything. Once real files exist in the folder, `.gitkeep` can be deleted.
+
+**Q:** What does `-rf` mean in `rm -rf`?
+**A:** `-r` = recursive (delete directory and all contents), `-f` = force (no confirmation, ignore missing files). Dangerous — no undo.
+
+**Q:** What does `-p` mean in `mkdir -p`?
+**A:** Parents — create missing parent directories in the path, and don't error if the directory already exists. Safe to use habitually.
+
+**Q:** What does `grep -o` do?
+**A:** `-o` = print only the matching part, not the whole line. Used with a pipe to extract a specific field from JSON output.
+
+**Q:** What other Docker concepts are there to learn?
+**A:** The basics covered here are sufficient for now. More concepts come up naturally in later days: Docker networks (Day 24 — Nginx), running a database container (Day 27 — PostgreSQL), and multi-service compose files (Day 28 — Kafka/RabbitMQ).
 
 **Q:** How do I add instructions to CLAUDE.md to save notes during `/day` sessions before context is auto-compacted?
 **A:** Two parts:
@@ -126,7 +126,7 @@ bin/
 
 ---
 
-## Files to create
+## Files created
 
 | File | Purpose |
 |------|---------|
